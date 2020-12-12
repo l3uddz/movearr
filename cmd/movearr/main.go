@@ -37,7 +37,10 @@ var (
 			DryRun bool `type:"bool" default:"0" help:"Dry run mode"`
 			Limit  int  `required:"0" type:"int" default:"0" help:"Maximum number of items"`
 		} `cmd help:"Move items with incorrect ids."`
-
+		FixYears struct {
+			DryRun bool `type:"bool" default:"0" help:"Dry run mode"`
+			Limit  int  `required:"0" type:"int" default:"0" help:"Maximum number of items"`
+		} `cmd help:"Move items with incorrect years."`
 		MissingIds struct {
 			DryRun bool `type:"bool" default:"0" help:"Dry run mode"`
 			Limit  int  `required:"0" type:"int" default:"0" help:"Maximum number of items"`
@@ -145,6 +148,9 @@ func main() {
 	switch ctx.Command() {
 	case "fix-ids":
 		fixIds(p, cli.FixIds.DryRun, cli.FixIds.Limit)
+		return
+	case "fix-years":
+		fixYears(p, cli.FixYears.DryRun, cli.FixYears.Limit)
 		return
 	case "missing-ids":
 		missingIds(p, cli.MissingIds.DryRun, cli.MissingIds.Limit)

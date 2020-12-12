@@ -43,22 +43,25 @@ func fixIds(pc *radarr.Client, dryRun bool, limit int) {
 	}
 
 	if dryRun {
+		log.Warn().
+			Int("count", len(idsToMove)).
+			Msg("Dry run enabled, not sending move request")
 		return
 	}
 
 	// move items
-	log.Info().
-		Int("count", len(idsToMove)).
-		Msg("Moving items")
-
 	if err := pc.Move(idsToMove); err != nil {
 		log.Error().
 			Err(err).
+			Int("count", len(idsToMove)).
 			Msg("Failed moving items...")
 		return
 	}
 
-	log.Info().Msg("Move request sent")
+	log.Info().
+		Int("count", len(idsToMove)).
+		Msg("Move request sent")
+	return
 }
 
 func missingIds(pc *radarr.Client, dryRun bool, limit int) {
@@ -99,20 +102,23 @@ func missingIds(pc *radarr.Client, dryRun bool, limit int) {
 	}
 
 	if dryRun {
+		log.Warn().
+			Int("count", len(idsToMove)).
+			Msg("Dry run enabled, not sending move request")
 		return
 	}
 
 	// move items
-	log.Info().
-		Int("count", len(idsToMove)).
-		Msg("Moving items")
-
 	if err := pc.Move(idsToMove); err != nil {
 		log.Error().
 			Err(err).
+			Int("count", len(idsToMove)).
 			Msg("Failed moving items...")
 		return
 	}
 
-	log.Info().Msg("Move request sent")
+	log.Info().
+		Int("count", len(idsToMove)).
+		Msg("Move request sent")
+	return
 }
