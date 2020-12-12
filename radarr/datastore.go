@@ -164,8 +164,7 @@ SELECT DISTINCT M.Id
               , M.TmdbId
               , M.Path
 FROM Movies M
-         JOIN MovieFiles MF ON MF.MovieId = M.Id
-
+--         JOIN MovieFiles MF ON MF.MovieId = M.Id
 WHERE M.Path IS NOT NULL
   AND (
         (M.ImdbId IS NOT NULL AND M.Path LIKE '%imdb:%' AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
@@ -182,7 +181,7 @@ SELECT DISTINCT M.Id
               , M.TmdbId
               , M.Path
 FROM Movies M
-         JOIN MovieFiles MF ON MF.MovieId = M.Id
+--         JOIN MovieFiles MF ON MF.MovieId = M.Id
 WHERE M.Path IS NOT NULL
   AND (
         (M.ImdbId IS NOT NULL AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
@@ -199,7 +198,7 @@ SELECT DISTINCT M.Id
               , M.TmdbId
               , M.Path
 FROM Movies M
-         JOIN MovieFiles MF ON MF.MovieId = M.Id
+--         JOIN MovieFiles MF ON MF.MovieId = M.Id
 WHERE M.Path IS NOT NULL
   AND M.Year > 0
   AND M.Path NOT LIKE '%(' || M.Year || ')%'
