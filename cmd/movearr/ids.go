@@ -1,15 +1,19 @@
 package main
 
 import (
-	"github.com/l3uddz/movearr/radarr"
 	"github.com/rs/zerolog/log"
 )
 
-func fixIds(pc *radarr.Client, dryRun bool, limit int) {
+func fixIds(pc PVR, dryRun bool, limit int) {
+	// set logger
+	l := log.With().
+		Str("pvr", pc.Type()).
+		Logger()
+
 	// retrieve items with incorrect ids
 	items, err := pc.GetItemsWithIncorrectIds()
 	if err != nil {
-		log.Error().
+		l.Error().
 			Err(err).
 			Msg("Failed retrieving items")
 		return
@@ -17,18 +21,18 @@ func fixIds(pc *radarr.Client, dryRun bool, limit int) {
 
 	count := len(items)
 	if count == 0 {
-		log.Info().Msg("There are no items with incorrect ids")
+		l.Info().Msg("There are no items with incorrect ids")
 		return
 	}
 
-	log.Info().
+	l.Info().
 		Int("count", count).
 		Msg("Found items with incorrect ids")
 
 	// process items
 	idsToMove := make([]uint64, 0)
 	for pos, item := range items {
-		log.Info().
+		l.Info().
 			Str("title", item.Title).
 			Uint64("year", item.Year).
 			Str("path", item.Path).
@@ -43,7 +47,7 @@ func fixIds(pc *radarr.Client, dryRun bool, limit int) {
 	}
 
 	if dryRun {
-		log.Warn().
+		l.Warn().
 			Int("count", len(idsToMove)).
 			Msg("Dry run enabled, not sending move request")
 		return
@@ -51,24 +55,29 @@ func fixIds(pc *radarr.Client, dryRun bool, limit int) {
 
 	// move items
 	if err := pc.Move(idsToMove); err != nil {
-		log.Error().
+		l.Error().
 			Err(err).
 			Int("count", len(idsToMove)).
 			Msg("Failed moving items...")
 		return
 	}
 
-	log.Info().
+	l.Info().
 		Int("count", len(idsToMove)).
 		Msg("Move request sent")
 	return
 }
 
-func missingIds(pc *radarr.Client, dryRun bool, limit int) {
+func missingIds(pc PVR, dryRun bool, limit int) {
+	// set logger
+	l := log.With().
+		Str("pvr", pc.Type()).
+		Logger()
+
 	// retrieve items with missing ids
 	items, err := pc.GetItemsWithMissingIds()
 	if err != nil {
-		log.Error().
+		l.Error().
 			Err(err).
 			Msg("Failed retrieving items")
 		return
@@ -76,18 +85,18 @@ func missingIds(pc *radarr.Client, dryRun bool, limit int) {
 
 	count := len(items)
 	if count == 0 {
-		log.Info().Msg("There are no items with missing ids")
+		l.Info().Msg("There are no items with missing ids")
 		return
 	}
 
-	log.Info().
+	l.Info().
 		Int("count", count).
 		Msg("Found items with missing ids")
 
 	// process items
 	idsToMove := make([]uint64, 0)
 	for pos, item := range items {
-		log.Info().
+		l.Info().
 			Str("title", item.Title).
 			Uint64("year", item.Year).
 			Str("path", item.Path).
@@ -102,7 +111,7 @@ func missingIds(pc *radarr.Client, dryRun bool, limit int) {
 	}
 
 	if dryRun {
-		log.Warn().
+		l.Warn().
 			Int("count", len(idsToMove)).
 			Msg("Dry run enabled, not sending move request")
 		return
@@ -110,14 +119,14 @@ func missingIds(pc *radarr.Client, dryRun bool, limit int) {
 
 	// move items
 	if err := pc.Move(idsToMove); err != nil {
-		log.Error().
+		l.Error().
 			Err(err).
 			Int("count", len(idsToMove)).
 			Msg("Failed moving items...")
 		return
 	}
 
-	log.Info().
+	l.Info().
 		Int("count", len(idsToMove)).
 		Msg("Move request sent")
 	return

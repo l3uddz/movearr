@@ -1,4 +1,4 @@
-package radarr
+package sonarr
 
 import (
 	"bytes"
@@ -23,7 +23,7 @@ func (c *Client) Available() error {
 	// send request
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("could not check Radarr availability: %v: %w",
+		return fmt.Errorf("could not check Sonarr availability: %v: %w",
 			err, movearr.ErrRadarrUnavailable)
 	}
 
@@ -31,24 +31,24 @@ func (c *Client) Available() error {
 
 	// validate response
 	if res.StatusCode != 200 {
-		return fmt.Errorf("could not check Radarr availability: %v: %w",
+		return fmt.Errorf("could not check Sonarr availability: %v: %w",
 			res.StatusCode, movearr.ErrRadarrUnavailable)
 	}
 
 	return nil
 }
 
-func (c *Client) Move(movieIds []uint64) error {
+func (c *Client) Move(SeriesIds []uint64) error {
 	// build payload
 	payload := new(struct {
-		MovieIds       []uint64 `json:"movieIds"`
+		SeriesIds      []uint64 `json:"seriesIds"`
 		RootFolderPath string   `json:"rootFolderPath"`
 		MoveFiles      bool     `json:"moveFiles"`
 	})
 
 	payload.MoveFiles = true
 	payload.RootFolderPath = c.rootFolder
-	payload.MovieIds = append(payload.MovieIds, movieIds...)
+	payload.SeriesIds = append(payload.SeriesIds, SeriesIds...)
 
 	// encode payload
 	js, err := json.Marshal(payload)
@@ -57,7 +57,7 @@ func (c *Client) Move(movieIds []uint64) error {
 	}
 
 	// create request
-	req, err := http.NewRequest("PUT", movearr.JoinURL(c.url, "api", "v3", "movie", "editor"),
+	req, err := http.NewRequest("PUT", movearr.JoinURL(c.url, "api", "v3", "series", "editor"),
 		bytes.NewBuffer(js))
 	if err != nil {
 		return fmt.Errorf("%v: %w", err, movearr.ErrFatal)
@@ -71,14 +71,14 @@ func (c *Client) Move(movieIds []uint64) error {
 	// send request
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("could not move Radarr movies: %w", err)
+		return fmt.Errorf("could not move Sonarr series: %w", err)
 	}
 
 	defer res.Body.Close()
 
 	// validate response
 	if res.StatusCode != 202 {
-		return fmt.Errorf("could not move Radarr movies %v: %w", res.StatusCode, movearr.ErrFatal)
+		return fmt.Errorf("could not move Sonarr series %v: %w", res.StatusCode, movearr.ErrFatal)
 	}
 
 	return nil

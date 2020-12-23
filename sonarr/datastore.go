@@ -1,4 +1,4 @@
-package radarr
+package sonarr
 
 import (
 	"database/sql"
@@ -40,15 +40,15 @@ func (d *datastore) GetItemsWithIncorrectIds() ([]movearr.MediaItem, error) {
 			Title  *string
 			Year   *uint64
 			ImdbId *string
-			TmdbId *uint64
+			TvdbId *uint64
 			Path   *string
 		})
 
-		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TmdbId, &m.Path); err != nil {
+		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TvdbId, &m.Path); err != nil {
 			return nil, fmt.Errorf("scan media item row: %w", err)
 		}
 
-		if m.Id == nil || m.Title == nil || m.TmdbId == nil || &m.Path == nil {
+		if m.Id == nil || m.Title == nil || m.TvdbId == nil || &m.Path == nil {
 			return nil, fmt.Errorf("invalid media item row: %w: %v", err, m)
 		}
 
@@ -57,7 +57,7 @@ func (d *datastore) GetItemsWithIncorrectIds() ([]movearr.MediaItem, error) {
 			Title:  *m.Title,
 			Year:   movearr.Uint64OrDefault(m.Year, 0),
 			ImdbId: movearr.StringOrDefault(m.ImdbId, ""),
-			TmdbId: *m.TmdbId,
+			TvdbId: *m.TvdbId,
 			Path:   *m.Path,
 		})
 	}
@@ -80,15 +80,15 @@ func (d *datastore) GetItemsWithIncorrectYears() ([]movearr.MediaItem, error) {
 			Title  *string
 			Year   *uint64
 			ImdbId *string
-			TmdbId *uint64
+			TvdbId *uint64
 			Path   *string
 		})
 
-		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TmdbId, &m.Path); err != nil {
+		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TvdbId, &m.Path); err != nil {
 			return nil, fmt.Errorf("scan media item row: %w", err)
 		}
 
-		if m.Id == nil || m.Title == nil || m.TmdbId == nil || &m.Path == nil {
+		if m.Id == nil || m.Title == nil || m.TvdbId == nil || &m.Path == nil {
 			return nil, fmt.Errorf("invalid media item row: %w: %v", err, m)
 		}
 
@@ -97,7 +97,7 @@ func (d *datastore) GetItemsWithIncorrectYears() ([]movearr.MediaItem, error) {
 			Title:  *m.Title,
 			Year:   movearr.Uint64OrDefault(m.Year, 0),
 			ImdbId: movearr.StringOrDefault(m.ImdbId, ""),
-			TmdbId: *m.TmdbId,
+			TvdbId: *m.TvdbId,
 			Path:   *m.Path,
 		})
 	}
@@ -120,15 +120,15 @@ func (d *datastore) GetItemsMissingIds() ([]movearr.MediaItem, error) {
 			Title  *string
 			Year   *uint64
 			ImdbId *string
-			TmdbId *uint64
+			TvdbId *uint64
 			Path   *string
 		})
 
-		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TmdbId, &m.Path); err != nil {
+		if err := rows.Scan(&m.Id, &m.Title, &m.Year, &m.ImdbId, &m.TvdbId, &m.Path); err != nil {
 			return nil, fmt.Errorf("scan media item row: %w", err)
 		}
 
-		if m.Id == nil || m.Title == nil || m.TmdbId == nil || &m.Path == nil {
+		if m.Id == nil || m.Title == nil || m.TvdbId == nil || &m.Path == nil {
 			return nil, fmt.Errorf("invalid media item row: %w: %v", err, m)
 		}
 
@@ -137,7 +137,7 @@ func (d *datastore) GetItemsMissingIds() ([]movearr.MediaItem, error) {
 			Title:  *m.Title,
 			Year:   movearr.Uint64OrDefault(m.Year, 0),
 			ImdbId: movearr.StringOrDefault(m.ImdbId, ""),
-			TmdbId: *m.TmdbId,
+			TvdbId: *m.TvdbId,
 			Path:   *m.Path,
 		})
 	}
@@ -152,16 +152,11 @@ SELECT DISTINCT M.Id
               , M.Title
               , M.Year
               , M.ImdbId
-              , M.TmdbId
+              , M.TvdbId
               , M.Path
-FROM Movies M
---         JOIN MovieFiles MF ON MF.MovieId = M.Id
+FROM Series M
 WHERE M.Path IS NOT NULL
-  AND (
-        (M.ImdbId IS NOT NULL AND M.Path LIKE '%imdb:%' AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
-        OR
-        (M.Path LIKE '%tmdb:%' AND M.Path NOT LIKE '%tmdb:' || M.TmdbId || '%')
-    )
+  AND (M.TvdbId IS NOT NULL AND M.Path LIKE '%tvdb:%' AND M.Path NOT LIKE '%tvdb:' || M.TvdbId || '%')
 ORDER BY M.Id ASC
 `
 	sqlSelectMissingIds = `
@@ -169,16 +164,11 @@ SELECT DISTINCT M.Id
               , M.Title
               , M.Year
               , M.ImdbId
-              , M.TmdbId
+              , M.TvdbId
               , M.Path
-FROM Movies M
---         JOIN MovieFiles MF ON MF.MovieId = M.Id
+FROM Series M
 WHERE M.Path IS NOT NULL
-  AND (
-        (M.ImdbId IS NOT NULL AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
-        OR
-        M.Path NOT LIKE '%tmdb:' || M.TmdbId || '%'
-    )
+  AND (M.ImdbId IS NOT NULL AND M.Path NOT LIKE '%tvdb:' || M.TvdbId || '%')
 ORDER BY M.Id ASC
 `
 	sqlSelectFixYears = `
@@ -186,10 +176,9 @@ SELECT DISTINCT M.Id
               , M.Title
               , M.Year
               , M.ImdbId
-              , M.TmdbId
+              , M.TvdbId
               , M.Path
-FROM Movies M
---         JOIN MovieFiles MF ON MF.MovieId = M.Id
+FROM Series M
 WHERE M.Path IS NOT NULL
   AND M.Year > 0
   AND M.Path NOT LIKE '%(' || M.Year || ')%'

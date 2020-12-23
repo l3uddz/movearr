@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/alecthomas/kong"
 	"github.com/l3uddz/movearr/radarr"
+	"github.com/l3uddz/movearr/sonarr"
 	"github.com/natefinch/lumberjack"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -11,10 +12,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type config struct {
 	Radarr radarr.Config `yaml:"radarr"`
+	Sonarr sonarr.Config `yaml:"sonarr"`
 }
 
 var (
@@ -28,9 +31,11 @@ var (
 		globals
 
 		// flags
-		Config    string `type:"path" default:"${config_file}" env:"movearr_CONFIG" help:"Config file path"`
-		Log       string `type:"path" default:"${log_file}" env:"movearr_LOG" help:"Log file path"`
-		Verbosity int    `type:"counter" default:"0" short:"v" env:"movearr_VERBOSITY" help:"Log level verbosity"`
+		PVR string `required:"1" type:"string" enum:"sonarr,radarr" help:"PVR to match from"`
+
+		Config    string `type:"path" default:"${config_file}" env:"MOVEARR_CONFIG" help:"Config file path"`
+		Log       string `type:"path" default:"${log_file}" env:"MOVEARR_LOG" help:"Log file path"`
+		Verbosity int    `type:"counter" default:"0" short:"v" env:"MOVEARR_VERBOSITY" help:"Log level verbosity"`
 
 		// commands
 		FixIds struct {
@@ -66,7 +71,7 @@ func main() {
 	// parse cli
 	ctx := kong.Parse(&cli,
 		kong.Name("movearr"),
-		kong.Description("Various plex tools"),
+		kong.Description("Move series and movies"),
 		kong.UsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{
 			Summary: true,
@@ -126,22 +131,31 @@ func main() {
 	}
 
 	switch {
-	case cfg.Radarr.Database == "":
+	case strings.EqualFold(cli.PVR, "radarr") && cfg.Radarr.Database == "":
 		log.Fatal().Msg("You must set a radarr database path in your configuration")
+	case strings.EqualFold(cli.PVR, "sonarr") && cfg.Sonarr.Database == "":
+		log.Fatal().Msg("You must set a sonarr database path in your configuration")
 	}
 
-	// plex
-	p, err := radarr.New(cfg.Radarr)
+	// pvr
+	p, err := NewPVR(&cfg, cli.PVR)
 	if err != nil {
 		log.Fatal().
 			Err(err).
-			Msg("Failed initialising radarr")
+			Str("pvr", cli.PVR).
+			Msg("Failed initialising pvr")
 	}
 
+	// set logger
+	l := log.With().
+		Str("pvr", p.Type()).
+		Logger()
+
 	if err := p.Available(); err != nil {
-		log.Fatal().
+		l.Fatal().
 			Err(err).
-			Msg("Failed validating radarr availability")
+			Str("pvr", cli.PVR).
+			Msg("Failed validating pvr availability")
 	}
 
 	// switch to appropriate command

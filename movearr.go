@@ -12,6 +12,16 @@ var (
 	ErrFatal = errors.New("fatal development related error")
 )
 
+type MediaItem struct {
+	Id     uint64
+	Title  string
+	Year   uint64
+	ImdbId string
+	TmdbId uint64
+	TvdbId uint64
+	Path   string
+}
+
 func Uint64OrDefault(currentValue *uint64, defaultValue uint64) uint64 {
 	if currentValue == nil {
 		return defaultValue

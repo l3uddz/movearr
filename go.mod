@@ -10,7 +10,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.20.0
-	golang.org/x/sys v0.0.0-20201211090839-8ad439b19e0f
+	golang.org/x/sys v0.0.0-20201223074533-0d417f636930
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )

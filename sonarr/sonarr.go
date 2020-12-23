@@ -1,4 +1,4 @@
-package radarr
+package sonarr
 
 import (
 	"github.com/l3uddz/movearr"
@@ -33,7 +33,7 @@ func New(c Config) (*Client, error) {
 	l := movearr.GetLogger(c.Verbosity).With().Logger()
 
 	return &Client{
-		pvrType:    "radarr",
+		pvrType:    "sonarr",
 		url:        c.URL,
 		apiKey:     c.ApiKey,
 		rootFolder: c.RootFolder,

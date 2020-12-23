@@ -1,4 +1,4 @@
-package radarr
+package sonarr
 
 import (
 	"fmt"
