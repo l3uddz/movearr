@@ -13,25 +13,14 @@ var (
 )
 
 type MediaItem struct {
-	Id     uint64
-	Title  string
-	Year   uint64
-	ImdbId string
-	TmdbId uint64
-	TvdbId uint64
-	Path   string
+	Id    uint64
+	Title string
+	Year  uint64
+	Path  string
 }
 
 func Uint64OrDefault(currentValue *uint64, defaultValue uint64) uint64 {
 	if currentValue == nil {
-		return defaultValue
-	}
-
-	return *currentValue
-}
-
-func StringOrDefault(currentValue *string, defaultValue string) string {
-	if currentValue == nil || *currentValue == "" {
 		return defaultValue
 	}
 
