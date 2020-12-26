@@ -164,6 +164,7 @@ SELECT DISTINCT M.Id
 FROM Series M
 WHERE M.Path IS NOT NULL
   AND M.Year > 0
+  AND TRIM(M.Title, ' ') NOT GLOB '*([0-9][0-9][0-9][0-9])'
   AND M.Path NOT LIKE '%(' || M.Year || ')%'
 ORDER BY M.Id ASC
 `
