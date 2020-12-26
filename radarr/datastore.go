@@ -9,7 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func newDatastore(path string) (*datastore, error) {
+func newDatastore(path string, metadataSeparator string) (*datastore, error) {
 	q := url.Values{}
 	q.Set("mode", "ro")
 
@@ -18,15 +18,16 @@ func newDatastore(path string) (*datastore, error) {
 		return nil, fmt.Errorf("could not open database: %v", err)
 	}
 
-	return &datastore{db: db}, nil
+	return &datastore{db: db, metadataSeparator: metadataSeparator}, nil
 }
 
 type datastore struct {
-	db *sql.DB
+	db                *sql.DB
+	metadataSeparator string
 }
 
 func (d *datastore) GetItemsWithIncorrectIds() ([]movearr.MediaItem, error) {
-	rows, err := d.db.Query(sqlSelectFixIds)
+	rows, err := d.db.Query(sqlSelectFixIds, d.metadataSeparator)
 	if err != nil {
 		return nil, fmt.Errorf("select media items: %v", err)
 	}
@@ -98,7 +99,7 @@ func (d *datastore) GetItemsWithIncorrectYears() ([]movearr.MediaItem, error) {
 }
 
 func (d *datastore) GetItemsMissingIds() ([]movearr.MediaItem, error) {
-	rows, err := d.db.Query(sqlSelectMissingIds)
+	rows, err := d.db.Query(sqlSelectMissingIds, d.metadataSeparator)
 	if err != nil {
 		return nil, fmt.Errorf("select media items: %v", err)
 	}
@@ -143,9 +144,9 @@ SELECT DISTINCT M.Id
 FROM Movies M
 WHERE M.Path IS NOT NULL
   AND (
-        (M.ImdbId IS NOT NULL AND M.Path LIKE '%imdb:%' AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
+        (M.ImdbId IS NOT NULL AND M.Path LIKE '%imdb' || $1 || '%' AND M.Path NOT LIKE '%imdb' || $1 || M.ImdbId || '%')
         OR
-        (M.Path LIKE '%tmdb:%' AND M.Path NOT LIKE '%tmdb:' || M.TmdbId || '%')
+        (M.Path LIKE '%tmdb' || $1 || '%' AND M.Path NOT LIKE '%tmdb' || $1 || M.TmdbId || '%')
     )
 ORDER BY M.Id ASC
 `
@@ -157,9 +158,9 @@ SELECT DISTINCT M.Id
 FROM Movies M
 WHERE M.Path IS NOT NULL
   AND (
-        (M.ImdbId IS NOT NULL AND M.Path NOT LIKE '%imdb:' || M.ImdbId || '%')
+        (M.ImdbId IS NOT NULL AND M.Path NOT LIKE '%imdb' || $1 || M.ImdbId || '%')
         OR
-        M.Path NOT LIKE '%tmdb:' || M.TmdbId || '%'
+        M.Path NOT LIKE '%tmdb' || $1 || M.TmdbId || '%'
     )
 ORDER BY M.Id ASC
 `

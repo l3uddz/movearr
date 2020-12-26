@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	Database   string `yaml:"database"`
-	URL        string `yaml:"url"`
-	ApiKey     string `yaml:"api_key"`
-	RootFolder string `yaml:"root_folder"`
+	Database          string `yaml:"database"`
+	URL               string `yaml:"url"`
+	ApiKey            string `yaml:"api_key"`
+	RootFolder        string `yaml:"root_folder"`
+	MetadataSeparator string `yaml:"metadata_separator"`
 
 	Verbosity string `yaml:"verbosity"`
 }
@@ -25,7 +26,11 @@ type Client struct {
 }
 
 func New(c Config) (*Client, error) {
-	store, err := newDatastore(c.Database)
+	if c.MetadataSeparator == "" {
+		c.MetadataSeparator = ":"
+	}
+
+	store, err := newDatastore(c.Database, c.MetadataSeparator)
 	if err != nil {
 		return nil, err
 	}

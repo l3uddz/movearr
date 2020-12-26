@@ -9,7 +9,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func newDatastore(path string) (*datastore, error) {
+func newDatastore(path string, metadataSeparator string) (*datastore, error) {
 	q := url.Values{}
 	q.Set("mode", "ro")
 
@@ -18,15 +18,16 @@ func newDatastore(path string) (*datastore, error) {
 		return nil, fmt.Errorf("could not open database: %v", err)
 	}
 
-	return &datastore{db: db}, nil
+	return &datastore{db: db, metadataSeparator: metadataSeparator}, nil
 }
 
 type datastore struct {
-	db *sql.DB
+	db                *sql.DB
+	metadataSeparator string
 }
 
 func (d *datastore) GetItemsWithIncorrectIds() ([]movearr.MediaItem, error) {
-	rows, err := d.db.Query(sqlSelectFixIds)
+	rows, err := d.db.Query(sqlSelectFixIds, d.metadataSeparator)
 	if err != nil {
 		return nil, fmt.Errorf("select media items: %v", err)
 	}
@@ -98,7 +99,7 @@ func (d *datastore) GetItemsWithIncorrectYears() ([]movearr.MediaItem, error) {
 }
 
 func (d *datastore) GetItemsMissingIds() ([]movearr.MediaItem, error) {
-	rows, err := d.db.Query(sqlSelectMissingIds)
+	rows, err := d.db.Query(sqlSelectMissingIds, d.metadataSeparator)
 	if err != nil {
 		return nil, fmt.Errorf("select media items: %v", err)
 	}
@@ -142,7 +143,7 @@ SELECT DISTINCT M.Id
               , M.Path
 FROM Series M
 WHERE M.Path IS NOT NULL
-  AND (M.TvdbId > 0 AND M.Path LIKE '%tvdb:%' AND M.Path NOT LIKE '%tvdb:' || M.TvdbId || '%')
+  AND (M.TvdbId > 0 AND M.Path LIKE '%tvdb' || $1 || '%' AND M.Path NOT LIKE '%tvdb' || $1 || M.TvdbId || '%')
 ORDER BY M.Id ASC
 `
 	sqlSelectMissingIds = `
@@ -152,7 +153,7 @@ SELECT DISTINCT M.Id
               , M.Path
 FROM Series M
 WHERE M.Path IS NOT NULL
-  AND (M.TvdbId > 0 AND M.Path NOT LIKE '%tvdb:' || M.TvdbId || '%')
+  AND (M.TvdbId > 0 AND M.Path NOT LIKE '%tvdb' || $1 || M.TvdbId || '%')
 ORDER BY M.Id ASC
 `
 	sqlSelectFixYears = `
