@@ -6,15 +6,17 @@ Simple CLI tool to perform Sonnar/Radarr moves based on specific criteria.
 
 ```yml
 radarr:
-  database: /opt/radarr/app/radarr.db
-  url: https://radarr.domain.com
-  api_key: token
-  root_folder: /mnt/unionfs/Media/Movies
+  database: /opt/radarr/app/radarr.db       # PVR Database Path
+  url: https://radarr.domain.com            # PVR API URL
+  api_key: token                            # PVR API Key
+  root_folder: /mnt/unionfs/Media/Movies    # Root folder items should be "moved" too
+  metadata_separator: ':'                   # Seperator in folder names between agent and id, e.g. tvdb:12345 tmdb:12345
 sonarr:
   database: /opt/sonarr/app/sonarr.db
   url: https://sonarr.domain.com
   api_key: token
   root_folder: /mnt/unionfs/Media/TV
+  metadata_separator: ':'
 ```
 
 ## Assumptions
